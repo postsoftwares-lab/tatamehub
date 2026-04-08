@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, watch, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { authService } from '@/services/auth.service'
-import { ownerService } from '@/services/owner.service'
-import { categoriesService, type AgeCategory, type Gender, type AgeCategoryBelt, type WeightCategory } from '@/services/categories.service'
-import { supabase } from '@/lib/supabase'
+import { ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import Card from '@/components/ui/Card.vue'
 import CardHeader from '@/components/ui/CardHeader.vue'
@@ -13,168 +9,24 @@ import CardDescription from '@/components/ui/CardDescription.vue'
 import CardContent from '@/components/ui/CardContent.vue'
 import Input from '@/components/ui/Input.vue'
 import Label from '@/components/ui/Label.vue'
-import { UserPlus, AlertCircle } from 'lucide-vue-next'
-import { validateBirthDate, validateCPF } from '@/utils/validators'
+import { UserPlus, AlertCircle, CheckCircle } from 'lucide-vue-next'
 
 const router = useRouter()
-const academyId = ref('')
+const route = useRoute()
 const isLoading = ref(false)
-const isLoadingData = ref(true)
 const errorMessage = ref('')
-const isStudentRegistering = ref(false)
-
-// Dados do Supabase
-const ageCategories = ref<AgeCategory[]>([])
-const genders = ref<Gender[]>([])
-const ageCategoryBelts = ref<AgeCategoryBelt[]>([])
-const weightCategories = ref<WeightCategory[]>([])
+const successMessage = ref('')
+const showSuccessScreen = ref(false)
 
 const formData = ref({
   name: '',
-  cpf: '',
-  birth_date: '',
-  belt: '',
-  gender: '',
-  gender_id: 0,
-  weight: '',
-  category: '',
   phone: '',
-  guardian_phone: ''
+  cpf: '',
+  date_of_birth: '',
+  emergency_contact_name: '',
+  emergency_contact_phone: '',
+  belt: 'branca'
 })
-
-// Computed para faixas disponíveis baseado na categoria de idade
-const availableBelts = computed(() => {
-  if (!formData.value.birth_date || isLoadingData.value) return []
-  
-  const ageCategory = categoriesService.calculateAgeCategory(formData.value.birth_date, ageCategories.value)
-  if (!ageCategory) return []
-  
-  return categoriesService.getBeltsForAgeCategory(ageCategory.id, ageCategoryBelts.value)
-})
-
-// Computed para categorias disponíveis baseadas no gênero e idade
-const availableCategories = computed(() => {
-  if (!formData.value.gender_id || !formData.value.birth_date || isLoadingData.value) return []
-  
-  return categoriesService.getAvailableCategories(
-    formData.value.birth_date,
-    formData.value.gender_id,
-    ageCategories.value,
-    weightCategories.value
-  )
-})
-
-const calculateCategory = () => {
-  if (!formData.value.birth_date || !formData.value.weight || !formData.value.gender_id || isLoadingData.value) {
-    formData.value.category = ''
-    return
-  }
-
-  const weight = parseFloat(formData.value.weight)
-  const ageCategory = categoriesService.calculateAgeCategory(formData.value.birth_date, ageCategories.value)
-  
-  if (!ageCategory) {
-    formData.value.category = ''
-    return
-  }
-
-  // Para categorias de base (até 15 anos), não há divisão de peso
-  if (ageCategory.max_age < 16) {
-    formData.value.category = ageCategory.name
-    return
-  }
-
-  // Calcular categoria de peso
-  const weightCategoryName = categoriesService.calculateWeightCategory(
-    weight,
-    ageCategory.id,
-    formData.value.gender_id,
-    weightCategories.value
-  )
-
-  if (weightCategoryName) {
-    formData.value.category = `${ageCategory.name} - ${weightCategoryName}`
-  } else {
-    formData.value.category = ageCategory.name
-  }
-}
-
-// Watch para recalcular categoria automaticamente
-watch([() => formData.value.birth_date, () => formData.value.weight, () => formData.value.gender_id], () => {
-  calculateCategory()
-})
-
-// Watch para resetar faixa se não estiver disponível na nova categoria
-watch(() => formData.value.birth_date, () => {
-  if (formData.value.belt && !availableBelts.value.includes(formData.value.belt)) {
-    formData.value.belt = ''
-  }
-})
-
-// Watch para atualizar gender_id quando gender mudar
-watch(() => formData.value.gender, (newGender) => {
-  const gender = genders.value.find(g => g.name === newGender)
-  formData.value.gender_id = gender ? gender.id : 0
-})
-
-onMounted(async () => {
-  // Verificar se é aluno vindo do link de boas-vindas
-  const route = router.currentRoute.value
-  const academyIdFromQuery = route.query.academy_id as string
-  
-  if (academyIdFromQuery) {
-    // Aluno se cadastrando via link
-    isStudentRegistering.value = true
-    academyId.value = academyIdFromQuery
-  } else {
-    // Professor cadastrando aluno
-    const user = await authService.getCurrentUser()
-    if (!user) {
-      router.push('/login')
-      return
-    }
-
-    const { owner, academy } = await ownerService.getOwnerWithAcademy(user.id)
-    
-    if (!academy) {
-      router.push('/dashboard')
-      return
-    }
-
-    academyId.value = academy.id
-  }
-
-  // Carregar dados do Supabase
-  try {
-    isLoadingData.value = true
-    const [ageCats, gends, ageCatBelts, weightCats] = await Promise.all([
-      categoriesService.getAgeCategories(),
-      categoriesService.getGenders(),
-      categoriesService.getAgeCategoryBelts(),
-      categoriesService.getWeightCategories()
-    ])
-
-    ageCategories.value = ageCats
-    genders.value = gends
-    ageCategoryBelts.value = ageCatBelts
-    weightCategories.value = weightCats
-  } catch (error) {
-    console.error('Erro ao carregar dados:', error)
-    errorMessage.value = 'Erro ao carregar dados do formulário. Tente novamente.'
-  } finally {
-    isLoadingData.value = false
-  }
-})
-
-const goBack = () => {
-  if (isStudentRegistering.value) {
-    // Aluno volta para a página de boas-vindas
-    router.back()
-  } else {
-    // Professor volta para a lista de alunos
-    router.push('/students')
-  }
-}
 
 const formatCPF = (value: string) => {
   const numbers = value.replace(/\D/g, '')
@@ -193,8 +45,11 @@ const handleCPFInput = (event: Event) => {
 }
 
 const handleSubmit = async () => {
+  errorMessage.value = ''
+  successMessage.value = ''
+
   if (!formData.value.name.trim()) {
-    errorMessage.value = 'Por favor, preencha o nome do aluno.'
+    errorMessage.value = 'Por favor, preencha o nome.'
     return
   }
 
@@ -203,66 +58,83 @@ const handleSubmit = async () => {
     return
   }
 
-  if (!validateCPF(formData.value.cpf)) {
-    errorMessage.value = 'CPF inválido. Verifique e tente novamente.'
+  if (!formData.value.phone.trim()) {
+    errorMessage.value = 'Por favor, preencha o telefone.'
     return
   }
 
-  if (!formData.value.birth_date) {
+  if (!formData.value.date_of_birth) {
     errorMessage.value = 'Por favor, preencha a data de nascimento.'
     return
   }
 
-  if (!validateBirthDate(formData.value.birth_date)) {
-    errorMessage.value = 'Data de nascimento inválida. O aluno deve ter no mínimo 4 anos.'
+  if (!formData.value.emergency_contact_name.trim()) {
+    errorMessage.value = 'Por favor, preencha o nome do contato de emergência.'
+    return
+  }
+
+  if (!formData.value.emergency_contact_phone.trim()) {
+    errorMessage.value = 'Por favor, preencha o telefone do contato de emergência.'
     return
   }
 
   isLoading.value = true
-  errorMessage.value = ''
 
   try {
-    const { error } = await supabase
-      .from('students')
-      .insert({
-        academy_id: academyId.value,
-        name: formData.value.name.trim(),
-        cpf: formData.value.cpf.replace(/\D/g, ''),
-        birth_date: formData.value.birth_date,
-        belt: formData.value.belt.trim() || null,
-        gender: formData.value.gender.trim() || null,
-        weight: formData.value.weight ? parseFloat(formData.value.weight) : null,
-        category: formData.value.category.trim() || null,
-        phone: formData.value.phone.trim() || null,
-        guardian_phone: formData.value.guardian_phone.trim() || null,
-        active: true
-      })
+    let academyId = route.query.academy_id as string
+    
+    if (!academyId) {
+      academyId = route.params.academy_id as string
+    }
 
-    if (error) {
-      if (error.code === '23505') {
-        errorMessage.value = 'Este CPF já está cadastrado.'
-      } else {
-        errorMessage.value = 'Erro ao cadastrar aluno. Tente novamente.'
-      }
+    if (!academyId) {
+      errorMessage.value = 'ID da academia não fornecido.'
       return
     }
 
-    // Redirecionar conforme o tipo de usuário
-    if (isStudentRegistering.value) {
-      // Aluno vai para página de conclusão
+    const payload = {
+      academy_id: academyId,
+      name: formData.value.name.trim(),
+      phone: formData.value.phone.trim(),
+      cpf: formData.value.cpf.replace(/\D/g, ''),
+      date_of_birth: formData.value.date_of_birth,
+      emergency_contact_name: formData.value.emergency_contact_name.trim(),
+      emergency_contact_phone: formData.value.emergency_contact_phone.trim(),
+      belt: formData.value.belt
+    }
+
+    const response = await fetch(
+      'https://tcnqzaciroovlqdkgyes.supabase.co/functions/v1/register-student-public',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      }
+    )
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      errorMessage.value = data.message || 'Erro ao registrar aluno.'
+      return
+    }
+
+    successMessage.value = 'Aluno registrado com sucesso!'
+    showSuccessScreen.value = true
+    setTimeout(() => {
       router.push({
         name: 'student-finish',
         query: {
           name: formData.value.name,
-          academy: academyId.value
+          academy: academyId
         }
       })
-    } else {
-      // Professor volta para lista de alunos
-      router.push('/students')
-    }
+    }, 3000)
   } catch (error) {
-    errorMessage.value = 'Erro inesperado. Tente novamente.'
+    console.error('Erro:', error)
+    errorMessage.value = 'Erro ao registrar aluno. Tente novamente.'
   } finally {
     isLoading.value = false
   }
@@ -270,239 +142,199 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-    <!-- Main Content -->
-    <main class="w-full py-4 pb-24 md:py-8 md:pb-8">
-      <div class="max-w-3xl mx-auto space-y-6 px-4 md:px-6">
-        <Card>
-          <CardHeader class="pb-4">
-            <div class="flex items-center gap-3">
-              <div class="flex items-center justify-center w-10 h-10 md:w-12 md:h-12 rounded-lg bg-primary/10">
-                <UserPlus class="h-5 w-5 md:h-6 md:w-6 text-primary" />
+  <!-- Tela de Sucesso -->
+  <div v-if="showSuccessScreen" class="min-h-screen bg-white flex items-center justify-center px-4">
+    <div class="text-center max-w-md mx-auto">
+      <div class="mb-6">
+        <div class="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-100 mb-4">
+          <CheckCircle class="h-12 w-12 sm:h-14 sm:w-14 text-green-600" />
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+          Cadastro Realizado!
+        </h1>
+        <p class="text-gray-600 text-sm sm:text-base">
+          Seu cadastro foi realizado com sucesso. Você será redirecionado em instantes...
+        </p>
+      </div>
+      
+      <div class="flex justify-center">
+        <div class="flex space-x-1">
+          <div class="w-2 h-2 bg-green-600 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+          <div class="w-2 h-2 bg-green-600 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+          <div class="w-2 h-2 bg-green-600 rounded-full animate-bounce" style="animation-delay: 0.4s;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Formulário Original -->
+  <div v-else class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
+    <main class="w-full py-6 pb-28 sm:py-8 sm:pb-8">
+      <div class="max-w-2xl mx-auto px-4 sm:px-6">
+        <Card class="shadow-sm">
+          <CardHeader class="pb-3 sm:pb-4">
+            <div class="flex items-center gap-2 sm:gap-3">
+              <div class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex-shrink-0">
+                <UserPlus class="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
-              <div>
-                <CardTitle class="text-xl md:text-2xl">Cadastrar Novo Aluno</CardTitle>
-                <CardDescription class="text-xs md:text-sm">
-                  {{ isStudentRegistering ? 'Preencha seus dados abaixo' : 'Preencha os dados do aluno abaixo' }}
+              <div class="min-w-0">
+                <CardTitle class="text-lg sm:text-xl">Cadastro de Aluno</CardTitle>
+                <CardDescription class="text-xs sm:text-sm">
+                  Preencha seus dados para se registrar
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
 
-          <CardContent>
-            <form @submit.prevent="handleSubmit" class="space-y-6">
+          <CardContent class="pt-0">
+            <form @submit.prevent="handleSubmit" class="space-y-4">
+              <!-- Success Message -->
+              <div v-if="successMessage && !showSuccessScreen" class="flex items-center gap-2 p-2.5 text-xs sm:text-sm text-green-700 bg-green-50 border border-green-200 rounded-md">
+                <CheckCircle class="h-4 w-4 flex-shrink-0" />
+                <span>{{ successMessage }}</span>
+              </div>
+
               <!-- Error Message -->
-              <div v-if="errorMessage" class="flex items-center gap-2 p-3 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-                <AlertCircle class="h-4 w-4 flex-shrink-0" />
+              <div v-if="errorMessage" class="flex items-start gap-2 p-2.5 text-xs sm:text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
+                <AlertCircle class="h-4 w-4 flex-shrink-0 mt-0.5" />
                 <span>{{ errorMessage }}</span>
               </div>
 
-              <!-- Dados Pessoais -->
-              <div class="space-y-3 md:space-y-4">
-                <h3 class="text-base md:text-lg font-semibold">Dados Pessoais</h3>
-                
-                <div class="grid gap-4 md:grid-cols-2">
-                  <!-- Nome -->
-                  <div class="space-y-2 md:col-span-2">
-                    <Label for="name">Nome Completo <span class="text-destructive">*</span></Label>
-                    <Input
-                      id="name"
-                      v-model="formData.name"
-                      type="text"
-                      placeholder="Ex: João Silva Santos"
-                      required
-                      :disabled="isLoading"
-                    />
-                  </div>
-
-                  <!-- CPF -->
-                  <div class="space-y-2">
-                    <Label for="cpf">CPF <span class="text-destructive">*</span></Label>
-                    <Input
-                      id="cpf"
-                      :model-value="formData.cpf"
-                      @input="handleCPFInput"
-                      type="text"
-                      placeholder="000.000.000-00"
-                      maxlength="14"
-                      required
-                      :disabled="isLoading"
-                    />
-                  </div>
-
-                  <!-- Data de Nascimento -->
-                  <div class="space-y-2">
-                    <Label for="birth_date">Data de Nascimento <span class="text-destructive">*</span></Label>
-                    <Input
-                      id="birth_date"
-                      v-model="formData.birth_date"
-                      type="date"
-                      required
-                      :disabled="isLoading"
-                    />
-                  </div>
-
-                  <!-- Gênero -->
-                  <div class="space-y-2">
-                    <Label for="gender">Gênero</Label>
-                    <div v-if="isLoadingData" class="h-10 bg-muted animate-pulse rounded-md"></div>
-                    <select
-                      v-else
-                      id="gender"
-                      v-model="formData.gender"
-                      class="flex h-10 w-full rounded-md border border-input bg-background pl-3 pr-10 py-2 text-sm ring-offset-background appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.75rem_center] bg-no-repeat file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      :disabled="isLoading"
-                    >
-                      <option value="">Selecione...</option>
-                      <option v-for="gender in genders" :key="gender.id" :value="gender.name">
-                        {{ gender.name }}
-                      </option>
-                    </select>
-                  </div>
-
-                  <!-- Peso -->
-                  <div class="space-y-2">
-                    <Label for="weight">Peso (kg)</Label>
-                    <Input
-                      id="weight"
-                      v-model="formData.weight"
-                      type="number"
-                      step="0.1"
-                      placeholder="Ex: 75.5"
-                      :disabled="isLoading"
-                    />
-                  </div>
-                </div>
+              <!-- Nome -->
+              <div class="space-y-1.5">
+                <Label for="name" class="text-xs sm:text-sm">Nome Completo <span class="text-destructive">*</span></Label>
+                <Input
+                  id="name"
+                  v-model="formData.name"
+                  type="text"
+                  placeholder="João Silva Santos"
+                  :disabled="isLoading"
+                  class="h-9 sm:h-10 text-sm focus:ring-1 focus:ring-primary/50"
+                />
               </div>
 
-              <!-- Dados de Treino -->
-              <div class="space-y-3 md:space-y-4">
-                <h3 class="text-base md:text-lg font-semibold">Dados de Treino</h3>
-                
-                <div class="grid gap-4 md:grid-cols-2">
-                  <!-- Faixa -->
-                  <div class="space-y-2">
-                    <Label for="belt">Faixa</Label>
-                    <div v-if="isLoadingData" class="h-10 bg-muted animate-pulse rounded-md"></div>
-                    <select
-                      v-else
-                      id="belt"
-                      v-model="formData.belt"
-                      class="flex h-10 w-full rounded-md border border-input bg-background pl-3 pr-10 py-2 text-sm ring-offset-background appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.75rem_center] bg-no-repeat file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      :disabled="isLoading || availableBelts.length === 0"
-                    >
-                      <option value="">{{ availableBelts.length === 0 ? 'Informe a data de nascimento' : 'Selecione...' }}</option>
-                      <option v-for="belt in availableBelts" :key="belt" :value="belt">
-                        {{ belt }}
-                      </option>
-                    </select>
-                  </div>
-
-                  <!-- Categoria (sugerida automaticamente, editável) -->
-                  <div class="space-y-2">
-                    <Label for="category">Categoria</Label>
-                    <div v-if="isLoadingData" class="h-10 bg-muted animate-pulse rounded-md"></div>
-                    <select
-                      v-else
-                      id="category"
-                      v-model="formData.category"
-                      class="flex h-10 w-full rounded-md border border-input bg-background pl-3 pr-10 py-2 text-sm ring-offset-background appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1.25rem] bg-[right_0.75rem_center] bg-no-repeat file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      :disabled="isLoading || availableCategories.length === 0"
-                    >
-                      <option value="">{{ availableCategories.length === 0 ? 'Informe gênero e data de nascimento' : 'Selecione...' }}</option>
-                      <option v-for="category in availableCategories" :key="category" :value="category">
-                        {{ category }}
-                      </option>
-                    </select>
-                    <p v-if="!isLoadingData" class="text-xs text-muted-foreground">
-                      Sugerida automaticamente, mas pode ser alterada
-                    </p>
-                  </div>
-                </div>
+              <!-- CPF -->
+              <div class="space-y-1.5">
+                <Label for="cpf" class="text-xs sm:text-sm">CPF <span class="text-destructive">*</span></Label>
+                <Input
+                  id="cpf"
+                  :model-value="formData.cpf"
+                  @input="handleCPFInput"
+                  type="text"
+                  placeholder="000.000.000-00"
+                  maxlength="14"
+                  :disabled="isLoading"
+                  class="h-9 sm:h-10 text-sm focus:ring-1 focus:ring-primary/50"
+                />
               </div>
 
-              <!-- Contatos -->
-              <div class="space-y-3 md:space-y-4">
-                <h3 class="text-base md:text-lg font-semibold">Contatos</h3>
-                
-                <div class="grid gap-4 md:grid-cols-2">
-                  <!-- Telefone -->
-                  <div class="space-y-2">
-                    <Label for="phone">Telefone</Label>
-                    <Input
-                      id="phone"
-                      v-model="formData.phone"
-                      type="tel"
-                      placeholder="(00) 00000-0000"
-                      :disabled="isLoading"
-                    />
-                  </div>
-
-                  <!-- Telefone do Responsável -->
-                  <div class="space-y-2">
-                    <Label for="guardian_phone">Telefone do Responsável</Label>
-                    <Input
-                      id="guardian_phone"
-                      v-model="formData.guardian_phone"
-                      type="tel"
-                      placeholder="(00) 00000-0000"
-                      :disabled="isLoading"
-                    />
-                  </div>
-                </div>
+              <!-- Data de Nascimento -->
+              <div class="space-y-1.5">
+                <Label for="date_of_birth" class="text-xs sm:text-sm">Data de Nascimento <span class="text-destructive">*</span></Label>
+                <Input
+                  id="date_of_birth"
+                  v-model="formData.date_of_birth"
+                  type="date"
+                  :disabled="isLoading"
+                  class="h-9 sm:h-10 text-sm focus:ring-1 focus:ring-primary/50"
+                />
               </div>
 
+              <!-- Telefone -->
+              <div class="space-y-1.5">
+                <Label for="phone" class="text-xs sm:text-sm">Telefone <span class="text-destructive">*</span></Label>
+                <Input
+                  id="phone"
+                  v-model="formData.phone"
+                  type="tel"
+                  placeholder="(00) 00000-0000"
+                  :disabled="isLoading"
+                  class="h-9 sm:h-10 text-sm focus:ring-1 focus:ring-primary/50"
+                />
+              </div>
+
+              <!-- Faixa -->
+              <div class="space-y-1.5">
+                <Label for="belt" class="text-xs sm:text-sm">Faixa <span class="text-destructive">*</span></Label>
+                <select
+                  id="belt"
+                  v-model="formData.belt"
+                  class="flex h-9 sm:h-10 w-full rounded-md border border-input bg-background pl-3 pr-8 py-2 text-xs sm:text-sm ring-offset-background appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1rem] bg-[right_0.5rem_center] bg-no-repeat file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50"
+                  :disabled="isLoading"
+                >
+                  <option value="branca">Branca</option>
+                  <option value="cinza">Cinza</option>
+                  <option value="amarela">Amarela</option>
+                  <option value="laranja">Laranja</option>
+                  <option value="verde">Verde</option>
+                  <option value="azul">Azul</option>
+                  <option value="roxa">Roxa</option>
+                  <option value="marrom">Marrom</option>
+                  <option value="preta">Preta</option>
+                </select>
+              </div>
+
+              <!-- Contato de Emergência - Nome -->
+              <div class="space-y-1.5">
+                <Label for="emergency_contact_name" class="text-xs sm:text-sm">Contato de Emergência <span class="text-destructive">*</span></Label>
+                <Input
+                  id="emergency_contact_name"
+                  v-model="formData.emergency_contact_name"
+                  type="text"
+                  placeholder="Maria Silva Santos"
+                  :disabled="isLoading"
+                  class="h-9 sm:h-10 text-sm focus:ring-1 focus:ring-primary/50"
+                />
+              </div>
+
+              <!-- Contato de Emergência - Telefone -->
+              <div class="space-y-1.5">
+                <Label for="emergency_contact_phone" class="text-xs sm:text-sm">Telefone do Contato <span class="text-destructive">*</span></Label>
+                <Input
+                  id="emergency_contact_phone"
+                  v-model="formData.emergency_contact_phone"
+                  type="tel"
+                  placeholder="(00) 00000-0000"
+                  :disabled="isLoading"
+                  class="h-9 sm:h-10 text-sm focus:ring-1 focus:ring-primary/50"
+                />
+              </div>
+
+              <!-- Buttons -->
+              <div class="flex gap-2 pt-2 sm:pt-3">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  @click="$router.back()" 
+                  class="flex-1 h-9 sm:h-10 text-xs sm:text-sm" 
+                  :disabled="isLoading"
+                >
+                  Voltar
+                </Button>
+                <Button 
+                  @click="handleSubmit" 
+                  class="flex-1 h-9 sm:h-10 text-xs sm:text-sm" 
+                  :disabled="isLoading"
+                >
+                  <span v-if="!isLoading" class="flex items-center justify-center gap-1.5">
+                    <UserPlus class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <span class="hidden xs:inline">Registrar</span>
+                    <span class="inline xs:hidden">OK</span>
+                  </span>
+                  <span v-else class="flex items-center justify-center gap-1.5">
+                    <svg class="animate-spin h-3.5 w-3.5 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span class="hidden xs:inline">Registrando...</span>
+                    <span class="inline xs:hidden">...</span>
+                  </span>
+                </Button>
+              </div>
             </form>
-          </CardContent>
-        </Card>
-
-        <!-- Desktop Buttons -->
-        <Card class="hidden md:block">
-          <CardContent class="pt-6">
-            <div class="flex gap-3">
-              <Button type="button" variant="outline" @click="goBack" class="flex-1" :disabled="isLoading">
-                {{ isStudentRegistering ? 'Voltar' : 'Cancelar' }}
-              </Button>
-              <Button @click="handleSubmit" class="flex-1" :disabled="isLoading">
-                <span v-if="!isLoading" class="flex items-center gap-2">
-                  <UserPlus class="h-4 w-4" />
-                  {{ isStudentRegistering ? 'Finalizar Cadastro' : 'Cadastrar Aluno' }}
-                </span>
-                <span v-else class="flex items-center justify-center gap-2">
-                  <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  {{ isStudentRegistering ? 'Finalizando...' : 'Cadastrando...' }}
-                </span>
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
     </main>
-
-    <!-- Fixed Bottom Buttons (Mobile) -->
-    <div class="fixed bottom-0 left-0 right-0 p-4 bg-background border-t md:hidden z-10">
-      <div class="flex gap-2">
-        <Button type="button" variant="outline" @click="goBack" class="flex-1" :disabled="isLoading">
-          {{ isStudentRegistering ? 'Voltar' : 'Cancelar' }}
-        </Button>
-        <Button @click="handleSubmit" class="flex-1" :disabled="isLoading">
-          <span v-if="!isLoading" class="flex items-center justify-center gap-2">
-            <UserPlus class="h-4 w-4" />
-            {{ isStudentRegistering ? 'Finalizar' : 'Cadastrar' }}
-          </span>
-          <span v-else class="flex items-center justify-center gap-2">
-            <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Salvando...
-          </span>
-        </Button>
-      </div>
-    </div>
-
   </div>
 </template>

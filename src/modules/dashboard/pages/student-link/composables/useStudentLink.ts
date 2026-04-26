@@ -1,4 +1,4 @@
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { apiService } from '@/services/api'
 
 export function useStudentLink() {
@@ -41,20 +41,6 @@ export function useStudentLink() {
     }
   }
 
-  const shareLink = () => {
-    if (typeof window !== 'undefined' && window.navigator.share) {
-      window.navigator.share({
-        title: `Registre-se na ${academyName.value}`,
-        text: 'Registre-se em nossa academia',
-        url: registrationLink.value
-      })
-    }
-  }
-
-  const canShare = computed(() => {
-    return typeof window !== 'undefined' && !!window.navigator.share
-  })
-
   return {
     academyId,
     academyName,
@@ -62,8 +48,6 @@ export function useStudentLink() {
     isLoading,
     error,
     copied,
-    copyToClipboard,
-    shareLink,
-    canShare
+    copyToClipboard
   }
 }

@@ -97,9 +97,9 @@ class ApiService {
     endpoint: string,
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
-    const headers = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...options.headers
+      ...(typeof options.headers === 'object' && options.headers !== null ? options.headers : {})
     }
 
     if (this.accessToken) {

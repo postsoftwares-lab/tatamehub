@@ -16,8 +16,6 @@ interface Props {
 
 const props = defineProps<Props>()
 
-const chartRef = ref<InstanceType<typeof Chart> | null>(null)
-
 const chartData = ref({
   labels: [] as string[],
   datasets: [
@@ -112,7 +110,6 @@ onMounted(() => {
 <template>
   <div class="w-full h-96">
     <Chart
-      ref="chartRef"
       type="bar"
       :data="chartData"
       :options="chartOptions"

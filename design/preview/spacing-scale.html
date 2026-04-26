@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 20px; }
+  .rows { display: flex; flex-direction: column; gap: 8px; }
+  .r { display: flex; align-items: center; gap: 14px; }
+  .token { font-family: var(--font-mono); font-size: 11px; color: #787C85; min-width: 80px; }
+  .val { font-family: var(--font-mono); font-size: 11px; color: #575A63; min-width: 42px; text-align: right; }
+  .bar { height: 14px; background: #E6E7EA; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="rows">
+    <div class="r"><span class="token">space-1</span><span class="val">4px</span><div class="bar" style="width:4px"></div></div>
+    <div class="r"><span class="token">space-2</span><span class="val">8px</span><div class="bar" style="width:8px"></div></div>
+    <div class="r"><span class="token">space-3</span><span class="val">12px</span><div class="bar" style="width:12px"></div></div>
+    <div class="r"><span class="token">space-4</span><span class="val">16px</span><div class="bar" style="width:16px"></div></div>
+    <div class="r"><span class="token">space-5</span><span class="val">20px</span><div class="bar" style="width:20px"></div></div>
+    <div class="r"><span class="token">space-6</span><span class="val">24px</span><div class="bar" style="width:24px"></div></div>
+    <div class="r"><span class="token">space-8</span><span class="val">32px</span><div class="bar" style="width:32px"></div></div>
+    <div class="r"><span class="token">space-10</span><span class="val">40px</span><div class="bar" style="width:40px"></div></div>
+    <div class="r"><span class="token">space-12</span><span class="val">48px</span><div class="bar" style="width:48px"></div></div>
+    <div class="r"><span class="token">space-16</span><span class="val">64px</span><div class="bar" style="width:64px"></div></div>
+    <div class="r"><span class="token">space-20</span><span class="val">80px</span><div class="bar" style="width:80px"></div></div>
+  </div>
+</div>
+</body>
+</html>

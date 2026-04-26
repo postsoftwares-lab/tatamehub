@@ -1,0 +1,287 @@
+/* =========================================================
+   TatameHub — Colors & Type
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap');
+
+:root {
+  /* ---------------------------------------------------------
+     COLOR — Base palette (dark premium)
+     --------------------------------------------------------- */
+
+  /* Neutrals — cool, clean grays */
+  --ink-950: #09090B;        /* deepest background */
+  --ink-900: #0F0F11;        /* primary background */
+  --ink-850: #16171A;        /* raised surface */
+  --ink-800: #1C1D21;        /* card surface */
+  --ink-750: #24262B;        /* card surface high */
+  --ink-700: #2E3036;        /* border strong */
+  --ink-600: #3B3E45;        /* border */
+  --ink-500: #575A63;        /* muted text */
+  --ink-400: #787C85;        /* secondary text */
+  --ink-300: #A3A7B0;        /* tertiary text on dark */
+  --ink-200: #C9CCD2;        /* primary text on dark (soft) */
+  --ink-100: #E6E7EA;        /* primary text on dark */
+  --ink-50:  #F4F5F7;        /* off-white */
+  --ink-0:   #FFFFFF;
+
+  /* Accent — near-white / platinum (the "stripe" accent) */
+  --platinum-50:  #FFFFFF;
+  --platinum-100: #F7F8FA;
+  --platinum-200: #E9EBEF;
+  --platinum-300: #D2D5DB;
+  --platinum-400: #B4B8C0;
+  --platinum-500: #8A8F98;  /* ★ primary accent on light bg */
+  --platinum-600: #64686F;
+  --platinum-700: #44474D;
+  --platinum-800: #2A2C31;
+
+  /* Semantic */
+  --green-400: #4ADE80;   /* success / ativo */
+  --green-500: #22C55E;
+  --green-600: #16A34A;
+  --green-900: #0F2E1C;
+
+  --red-400:   #F87171;   /* danger / atrasado */
+  --red-500:   #EF4444;
+  --red-600:   #DC2626;
+  --red-900:   #2E1212;
+
+  --amber-400: #FBBF24;   /* warning / em aberto */
+  --amber-500: #F59E0B;
+  --amber-900: #2E1F08;
+
+  --blue-400:  #60A5FA;   /* info */
+  --blue-500:  #3B82F6;
+  --blue-900:  #0E1B33;
+
+  /* ---------------------------------------------------------
+     COLOR — Semantic tokens (use these in components)
+     --------------------------------------------------------- */
+
+  /* Backgrounds */
+  --bg-app:       var(--ink-900);
+  --bg-elevated:  var(--ink-800);
+  --bg-high:      var(--ink-750);
+  --bg-inset:     var(--ink-950);
+
+  /* Text */
+  --fg-1: var(--ink-100);      /* primary */
+  --fg-2: var(--ink-300);      /* secondary */
+  --fg-3: var(--ink-400);      /* tertiary / muted */
+  --fg-4: var(--ink-500);      /* disabled */
+  --fg-inverse: var(--ink-900);
+
+  /* Borders */
+  --border-subtle: var(--ink-700);
+  --border: var(--ink-600);
+  --border-strong: var(--ink-500);
+
+  /* Accent — pure white on dark, deep gray on light (clean & professional) */
+  --accent: var(--ink-50);              /* #F4F5F7 — near-white */
+  --accent-hover: var(--ink-0);
+  --accent-press: var(--ink-200);
+  --accent-soft: rgba(255, 255, 255, 0.08);
+  --on-accent: var(--ink-900);
+  --fg-brand: var(--ink-50);
+
+  /* Status — "ativo" / "inativo" / "pago" / "atrasado" / "em aberto" */
+  --status-active: var(--green-400);
+  --status-active-bg: rgba(74, 222, 128, 0.12);
+  --status-inactive: var(--ink-400);
+  --status-inactive-bg: rgba(122, 122, 134, 0.15);
+  --status-paid: var(--green-400);
+  --status-paid-bg: rgba(74, 222, 128, 0.12);
+  --status-pending: var(--amber-400);
+  --status-pending-bg: rgba(251, 191, 36, 0.12);
+  --status-late: var(--red-400);
+  --status-late-bg: rgba(248, 113, 113, 0.14);
+
+  /* ---------------------------------------------------------
+     SPACING — 4px base
+     --------------------------------------------------------- */
+  --space-0:   0;
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+  --space-16:  64px;
+  --space-20:  80px;
+  --space-24:  96px;
+
+  /* ---------------------------------------------------------
+     RADII
+     --------------------------------------------------------- */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;   /* default for inputs, buttons */
+  --radius-lg: 14px;   /* cards */
+  --radius-xl: 20px;   /* large containers */
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+
+  /* ---------------------------------------------------------
+     SHADOW & ELEVATION (subtle on dark — mostly rely on surface contrast)
+     --------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.35);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,0.45);
+  --shadow-gold-glow: 0 0 0 3px rgba(212,175,55,0.22);
+
+  /* Inner highlight (the premium "glass top edge" on cards) */
+  --inner-hl: inset 0 1px 0 rgba(255,255,255,0.04);
+
+  /* ---------------------------------------------------------
+     TYPOGRAPHY — families & weights
+     --------------------------------------------------------- */
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* Type scale — mobile-first; h1/h2 double-duty for marketing */
+  --text-xs:   12px;
+  --text-sm:   14px;
+  --text-base: 16px;
+  --text-md:   17px;
+  --text-lg:   20px;
+  --text-xl:   24px;
+  --text-2xl:  30px;
+  --text-3xl:  38px;
+  --text-4xl:  48px;
+  --text-5xl:  64px;
+  --text-6xl:  80px;
+
+  /* Line heights */
+  --lh-tight: 1.1;
+  --lh-snug:  1.25;
+  --lh-normal: 1.45;
+  --lh-relaxed: 1.6;
+
+  /* Tracking */
+  --track-tight: -0.02em;
+  --track-normal: 0;
+  --track-wide: 0.04em;
+  --track-caps: 0.08em;
+
+  /* ---------------------------------------------------------
+     MOTION
+     --------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 280ms;
+}
+
+/* =========================================================
+   Semantic text styles
+   ========================================================= */
+
+.t-display {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-5xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+  color: var(--fg-1);
+}
+
+.t-h1 {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-bold);
+  font-size: var(--text-3xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+  color: var(--fg-1);
+}
+
+.t-h2 {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-2xl);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--track-tight);
+  color: var(--fg-1);
+}
+
+.t-h3 {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-xl);
+  line-height: var(--lh-snug);
+  color: var(--fg-1);
+}
+
+.t-h4 {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-lg);
+  line-height: var(--lh-snug);
+  color: var(--fg-1);
+}
+
+.t-body {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-base);
+  line-height: var(--lh-normal);
+  color: var(--fg-1);
+}
+
+.t-body-sm {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-sm);
+  line-height: var(--lh-normal);
+  color: var(--fg-2);
+}
+
+.t-label {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-sm);
+  line-height: var(--lh-snug);
+  color: var(--fg-1);
+}
+
+.t-caption {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-xs);
+  line-height: var(--lh-snug);
+  color: var(--fg-3);
+}
+
+.t-overline {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-xs);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--track-caps);
+  text-transform: uppercase;
+  color: var(--fg-3);
+}
+
+.t-numeric {
+  font-family: var(--font-sans);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  letter-spacing: var(--track-tight);
+}
+
+.t-mono {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-regular);
+  font-size: var(--text-sm);
+  color: var(--fg-2);
+}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="_card.css">
+<style>
+  .stack { display: flex; flex-direction: column; gap: 12px; }
+  .row-t { display: flex; align-items: baseline; gap: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border-subtle); }
+  .row-t:last-child { border: none; }
+  .meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-3); min-width: 140px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="stack">
+    <div class="row-t"><span class="meta">H4 · 600 · 20px</span><span style="font-size:20px;font-weight:600;color:var(--fg-1)">Últimos pagamentos</span></div>
+    <div class="row-t"><span class="meta">Body · 400 · 16px</span><span style="font-size:16px;font-weight:400;color:var(--fg-1);line-height:1.45">João Silva está com mensalidade em atraso há 3 dias.</span></div>
+    <div class="row-t"><span class="meta">Body sm · 400 · 14px</span><span style="font-size:14px;font-weight:400;color:var(--fg-2)">Vence todo dia 10 · R$ 180/mês</span></div>
+    <div class="row-t"><span class="meta">Label · 500 · 14px</span><span style="font-size:14px;font-weight:500;color:var(--fg-1)">Valor mensal</span></div>
+    <div class="row-t"><span class="meta">Caption · 400 · 12px</span><span style="font-size:12px;font-weight:400;color:var(--fg-3)">Atualizado há 2 minutos</span></div>
+    <div class="row-t"><span class="meta">Overline · 600 · 12px</span><span style="font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--fg-3)">Ações rápidas</span></div>
+    <div class="row-t"><span class="meta">Mono · 400 · 14px</span><span style="font-size:14px;font-family:var(--font-mono);color:var(--fg-2)">tatamehub.app/cadastro/abc123</span></div>
+  </div>
+</div>
+</body>
+</html>

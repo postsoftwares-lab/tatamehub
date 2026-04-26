@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="_card.css">
+<style>
+  .stack { display: flex; flex-direction: column; gap: 12px; }
+  .surface { padding: 14px 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); }
+  .name { font-size: 13px; font-weight: 600; }
+  .meta { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="stack">
+    <div class="surface" style="background:#09090B"><span class="name" style="color:#C9CCD2">bg-inset — deep</span><span class="meta">ink-950 / #09090B</span></div>
+    <div class="surface" style="background:#0F0F11"><span class="name" style="color:#C9CCD2">bg-app — app background</span><span class="meta">ink-900 / #0F0F11</span></div>
+    <div class="surface" style="background:#1C1D21"><span class="name" style="color:#E6E7EA">bg-elevated — cards</span><span class="meta">ink-800 / #1C1D21</span></div>
+    <div class="surface" style="background:#24262B"><span class="name" style="color:#E6E7EA">bg-high — modals / raised</span><span class="meta">ink-750 / #24262B</span></div>
+  </div>
+</div>
+</body>
+</html>

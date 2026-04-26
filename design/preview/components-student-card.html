@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 18px 20px; }
+  .list { display: flex; flex-direction: column; gap: 10px; }
+  .item { display: flex; align-items: center; gap: 14px; padding: 14px; background: #1C1D21; border-radius: 14px; border: 1px solid #2E3036; box-shadow: inset 0 1px 0 rgba(255,255,255,0.04); }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg,#2E3036,#1C1D21); color: #E6E7EA; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12); }
+  .main { flex: 1; min-width: 0; }
+  .name { font-size: 15px; font-weight: 600; color: #E6E7EA; }
+  .meta { font-size: 12.5px; color: #787C85; margin-top: 2px; display: flex; gap: 10px; }
+  .price { font-size: 14px; font-weight: 700; color: #E6E7EA; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+  .dot { width: 5px; height: 5px; border-radius: 50%; }
+  .right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="list">
+    <div class="item">
+      <div class="avatar">JS</div>
+      <div class="main"><div class="name">João Silva</div><div class="meta"><span>BJJ · Azul</span><span>desde mar/24</span></div></div>
+      <div class="right"><span class="price">R$ 180</span><span class="badge" style="background:rgba(74,222,128,0.12);color:#4ADE80"><span class="dot" style="background:#4ADE80"></span>Pago</span></div>
+    </div>
+    <div class="item">
+      <div class="avatar">MC</div>
+      <div class="main"><div class="name">Maria Costa</div><div class="meta"><span>Muay Thai</span><span>desde jan/25</span></div></div>
+      <div class="right"><span class="price">R$ 160</span><span class="badge" style="background:rgba(248,113,113,0.16);color:#F87171"><span class="dot" style="background:#F87171"></span>Atrasado 3d</span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

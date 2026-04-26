@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="_card.css">
+<style>
+  .stack { display: flex; flex-direction: column; gap: 14px; }
+  .row-t { display: flex; align-items: baseline; gap: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-subtle); }
+  .row-t:last-child { border: none; }
+  .meta { font-family: var(--font-mono); font-size: 11px; color: var(--fg-3); min-width: 110px; flex-shrink: 0; }
+  .sample { color: var(--fg-1); letter-spacing: -0.02em; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="stack">
+    <div class="row-t"><span class="meta">Display · 700</span><span class="sample" style="font-size:48px;font-weight:700;line-height:1.1">tatamehub</span></div>
+    <div class="row-t"><span class="meta">H1 · 700 · 38px</span><span class="sample" style="font-size:38px;font-weight:700;line-height:1.1">Bom dia, professor</span></div>
+    <div class="row-t"><span class="meta">H2 · 600 · 30px</span><span class="sample" style="font-size:30px;font-weight:600;line-height:1.25">Gestão de alunos</span></div>
+    <div class="row-t"><span class="meta">H3 · 600 · 24px</span><span class="sample" style="font-size:24px;font-weight:600;line-height:1.25">Financeiro do mês</span></div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 20px; }
+  .stack { display: flex; flex-direction: column; gap: 14px; }
+  .example { background: var(--bg-elevated); border-radius: 12px; padding: 14px 16px; border: 1px solid var(--border-subtle); position: relative; overflow: hidden; }
+  .faixa { height: 3px; background: var(--fg-1); border-radius: 2px; }
+  .t-title { font-size: 14px; font-weight: 700; color: var(--fg-1); letter-spacing: -0.01em; }
+  .t-sub { font-size: 12px; color: var(--fg-3); margin-top: 2px; }
+  .top-stripe { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, #F4F5F7 0%, #F4F5F7 60%, transparent 60%, transparent 66%, #F4F5F7 66%, #F4F5F7 72%, transparent 72%); }
+  .caption { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-4); margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="stack">
+    <div class="example" style="padding-top:20px">
+      <div class="top-stripe"></div>
+      <div class="t-title">Header accent</div>
+      <div class="t-sub">Stripe topo + tick curto — branco sobre escuro</div>
+    </div>
+    <div class="example">
+      <div class="t-title">Underline brand</div>
+      <div style="margin-top:10px;display:flex;gap:6px;align-items:center">
+        <div class="faixa" style="width:60px"></div>
+        <div class="faixa" style="width:8px;opacity:0.55"></div>
+      </div>
+      <div class="caption">width varies · single tick</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

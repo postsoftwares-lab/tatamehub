@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="_card.css">
+<style>
+  .swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .sw { aspect-ratio: 1.1 / 1; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); }
+  .sw-name { font-size: 11px; font-weight: 600; }
+  .sw-hex { font-family: var(--font-mono); font-size: 10px; opacity: 0.7; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="swatches">
+    <div class="sw" style="background:#FFFFFF;color:#0F0F11"><span class="sw-name">50 ★</span><span class="sw-hex">FFFFFF</span></div>
+    <div class="sw" style="background:#F7F8FA;color:#0F0F11"><span class="sw-name">100</span><span class="sw-hex">F7F8FA</span></div>
+    <div class="sw" style="background:#E9EBEF;color:#0F0F11"><span class="sw-name">200</span><span class="sw-hex">E9EBEF</span></div>
+    <div class="sw" style="background:#D2D5DB;color:#0F0F11"><span class="sw-name">300</span><span class="sw-hex">D2D5DB</span></div>
+    <div class="sw" style="background:#B4B8C0;color:#0F0F11"><span class="sw-name">400</span><span class="sw-hex">B4B8C0</span></div>
+    <div class="sw" style="background:#8A8F98;color:#F7F8FA"><span class="sw-name">500</span><span class="sw-hex">8A8F98</span></div>
+    <div class="sw" style="background:#64686F;color:#F7F8FA"><span class="sw-name">600</span><span class="sw-hex">64686F</span></div>
+    <div class="sw" style="background:#44474D;color:#F7F8FA"><span class="sw-name">700</span><span class="sw-hex">44474D</span></div>
+    <div class="sw" style="background:#2A2C31;color:#E9EBEF"><span class="sw-name">800</span><span class="sw-hex">2A2C31</span></div>
+    <div class="sw" style="background:linear-gradient(135deg,#FFFFFF,#D2D5DB);color:#0F0F11"><span class="sw-name">shine</span><span class="sw-hex">gradient</span></div>
+  </div>
+</div>
+</body>
+</html>

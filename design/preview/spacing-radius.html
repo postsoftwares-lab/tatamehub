@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 20px; }
+  .radii { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .r { aspect-ratio: 1 / 1; background: var(--bg-elevated); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; justify-content: flex-end; padding: 10px; }
+  .nm { font-size: 11px; font-weight: 600; color: var(--fg-1); }
+  .vl { font-family: var(--font-mono); font-size: 10px; color: var(--fg-3); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="radii">
+    <div class="r" style="border-radius:4px"><span class="nm">xs</span><span class="vl">4px</span></div>
+    <div class="r" style="border-radius:6px"><span class="nm">sm</span><span class="vl">6px</span></div>
+    <div class="r" style="border-radius:10px"><span class="nm">md</span><span class="vl">10px</span></div>
+    <div class="r" style="border-radius:14px"><span class="nm">lg</span><span class="vl">14px</span></div>
+    <div class="r" style="border-radius:20px"><span class="nm">xl</span><span class="vl">20px</span></div>
+    <div class="r" style="border-radius:9999px"><span class="nm">full</span><span class="vl">pill</span></div>
+  </div>
+</div>
+</body>
+</html>

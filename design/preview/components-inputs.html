@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 20px; }
+  .stack { display: flex; flex-direction: column; gap: 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .lbl { font-size: 13px; font-weight: 500; color: var(--fg-1); }
+  .inp { font-family: var(--font-sans); font-size: 15px; background: #16171A; color: #E6E7EA; border: 1px solid #2E3036; border-radius: 10px; padding: 12px 14px; outline: none; }
+  .inp::placeholder { color: #575A63; }
+  .inp.focus { border-color: #F4F5F7; box-shadow: 0 0 0 3px rgba(255,255,255,0.14); }
+  .inp.err { border-color: #EF4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.18); }
+  .help { font-size: 12px; color: #787C85; }
+  .err-msg { font-size: 12px; color: #F87171; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="stack">
+    <div class="field"><label class="lbl">Nome do aluno</label><input class="inp" placeholder="Ex: João Silva"></div>
+    <div class="field"><label class="lbl">Telefone</label><input class="inp focus" value="(11) 98765-4321"></div>
+    <div class="field"><label class="lbl">Email</label><input class="inp err" value="joao.com"><span class="err-msg">Email inválido</span></div>
+    <div class="field"><label class="lbl">Valor mensal</label><input class="inp" value="R$ 180,00"><span class="help">Será cobrado todo dia 10.</span></div>
+  </div>
+</div>
+</body>
+</html>

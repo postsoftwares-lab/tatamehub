@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="_card.css">
+<style>
+  body { padding: 22px 20px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px 12px; align-items: center; }
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; font-family: var(--font-sans); }
+  .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .active   { background: rgba(74,222,128,0.12);  color: #4ADE80; }
+  .inactive { background: rgba(122,122,134,0.15); color: #A6A6B0; }
+  .paid     { background: rgba(74,222,128,0.12);  color: #4ADE80; }
+  .pending  { background: rgba(251,191,36,0.14);  color: #FBBF24; }
+  .late     { background: rgba(248,113,113,0.16); color: #F87171; }
+  .new      { background: rgba(212,175,55,0.14);  color: #D4AF37; }
+  .section-label { font-size: 10.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--fg-4); margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="section-label">Aluno</div>
+  <div class="row" style="margin:8px 0 14px">
+    <span class="badge active"><span class="dot" style="background:#4ADE80"></span>Ativo</span>
+    <span class="badge inactive"><span class="dot" style="background:#7A7A86"></span>Inativo</span>
+    <span class="badge new"><span class="dot" style="background:#D4AF37"></span>Novo</span>
+  </div>
+  <div class="section-label">Pagamento</div>
+  <div class="row" style="margin-top:8px">
+    <span class="badge paid"><span class="dot" style="background:#4ADE80"></span>Pago</span>
+    <span class="badge pending"><span class="dot" style="background:#FBBF24"></span>Em aberto</span>
+    <span class="badge late"><span class="dot" style="background:#F87171"></span>Atrasado 3d</span>
+    <span class="badge late"><span class="dot" style="background:#F87171"></span>Atrasado 12d</span>
+  </div>
+</div>
+</body>
+</html>

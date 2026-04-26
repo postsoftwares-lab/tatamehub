@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="_card.css">
+<style>
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .item { padding: 16px; border-radius: 12px; position: relative; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; }
+  .lbl { font-size: 13px; font-weight: 600; color: var(--fg-1); }
+  .meta { font-size: 11px; color: var(--fg-3); margin-top: 2px; font-family: var(--font-mono); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 600; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="grid">
+    <div class="item" style="background:rgba(74,222,128,0.08)">
+      <div class="lbl"><span class="dot" style="background:#4ADE80"></span>Ativo / Pago</div>
+      <div class="meta">--status-active<br>#4ADE80</div>
+      <span class="pill" style="background:rgba(74,222,128,0.14);color:#4ADE80">● Ativo</span>
+    </div>
+    <div class="item" style="background:rgba(251,191,36,0.08)">
+      <div class="lbl"><span class="dot" style="background:#FBBF24"></span>Em aberto</div>
+      <div class="meta">--status-pending<br>#FBBF24</div>
+      <span class="pill" style="background:rgba(251,191,36,0.14);color:#FBBF24">● Em aberto</span>
+    </div>
+    <div class="item" style="background:rgba(248,113,113,0.08)">
+      <div class="lbl"><span class="dot" style="background:#F87171"></span>Atrasado</div>
+      <div class="meta">--status-late<br>#F87171</div>
+      <span class="pill" style="background:rgba(248,113,113,0.16);color:#F87171">● Atrasado</span>
+    </div>
+    <div class="item" style="background:rgba(122,122,134,0.08)">
+      <div class="lbl"><span class="dot" style="background:#787C85"></span>Inativo</div>
+      <div class="meta">--status-inactive<br>#787C85</div>
+      <span class="pill" style="background:rgba(122,122,134,0.15);color:#A3A7B0">● Inativo</span>
+    </div>
+    <div class="item" style="background:rgba(96,165,250,0.08)">
+      <div class="lbl"><span class="dot" style="background:#60A5FA"></span>Info</div>
+      <div class="meta">--blue-400<br>#60A5FA</div>
+      <span class="pill" style="background:rgba(96,165,250,0.14);color:#60A5FA">● Info</span>
+    </div>
+    <div class="item" style="background:rgba(255,255,255,0.06)">
+      <div class="lbl"><span class="dot" style="background:#F4F5F7"></span>Destaque</div>
+      <div class="meta">--accent<br>#F4F5F7</div>
+      <span class="pill" style="background:rgba(255,255,255,0.1);color:#F4F5F7">● Novo</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

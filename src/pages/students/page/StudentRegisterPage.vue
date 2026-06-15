@@ -1,340 +1,355 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { Button } from '@/components/ui/button'
-import Card from '@/components/ui/Card.vue'
-import CardHeader from '@/components/ui/CardHeader.vue'
-import CardTitle from '@/components/ui/CardTitle.vue'
-import CardDescription from '@/components/ui/CardDescription.vue'
-import CardContent from '@/components/ui/CardContent.vue'
-import Input from '@/components/ui/Input.vue'
-import Label from '@/components/ui/Label.vue'
-import { UserPlus, AlertCircle, CheckCircle } from 'lucide-vue-next'
+import { ref, computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { apiFetch } from '@/api/client'
 
-const router = useRouter()
 const route = useRoute()
-const isLoading = ref(false)
-const errorMessage = ref('')
-const successMessage = ref('')
-const showSuccessScreen = ref(false)
+const router = useRouter()
+const academyId = computed(() => route.params.academy_id as string)
+const isInternal = computed(() => route.query.internal === 'true')
 
-const formData = ref({
+function getTodayDate(): string {
+  const today = new Date()
+  return today.toISOString().split('T')[0]
+}
+
+const form = ref({
   name: '',
   phone: '',
   cpf: '',
   date_of_birth: '',
+  category: '',
+  address: '',
+  neighborhood: '',
+  enrollment_date: getTodayDate(),
   emergency_contact_name: '',
   emergency_contact_phone: '',
-  belt: 'branca'
+  belt: 'white',
+  last_graduation_date: '',
 })
 
-const formatCPF = (value: string) => {
-  const numbers = value.replace(/\D/g, '')
-  if (numbers.length <= 11) {
-    return numbers
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d)/, '$1.$2')
-      .replace(/(\d{3})(\d{1,2})$/, '$1-$2')
+const loading = ref(false)
+const error = ref('')
+const success = ref(false)
+
+const categories = [
+  { value: 'Mirim', label: 'Mirim (4-7 anos)' },
+  { value: 'Infantil', label: 'Infantil (8-11 anos)' },
+  { value: 'Infanto-Juvenil', label: 'Infanto-Juvenil (12-15 anos)' },
+  { value: 'Juvenil', label: 'Juvenil (16-17 anos)' },
+  { value: 'Adulto', label: 'Adulto (18-29 anos)' },
+  { value: 'Master', label: 'Master (30+ anos)' },
+]
+
+function calculateCategory(dateOfBirth: string): string {
+  if (!dateOfBirth) return ''
+  const birthDate = new Date(dateOfBirth)
+  const today = new Date()
+  let age = today.getFullYear() - birthDate.getFullYear()
+  const monthDiff = today.getMonth() - birthDate.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--
   }
-  return value
+
+  if (age >= 4 && age <= 7) return 'Mirim'
+  if (age >= 8 && age <= 11) return 'Infantil'
+  if (age >= 12 && age <= 15) return 'Infanto-Juvenil'
+  if (age >= 16 && age <= 17) return 'Juvenil'
+  if (age >= 18 && age <= 29) return 'Adulto'
+  if (age >= 30) return 'Master'
+  return ''
 }
 
-const handleCPFInput = (event: Event) => {
-  const input = event.target as HTMLInputElement
-  formData.value.cpf = formatCPF(input.value)
+const belts = [
+  { value: 'white',  label: 'Branca',  color: '#f8fafc', border: '#94a3b8' },
+  { value: 'gray',   label: 'Cinza',   color: '#9ca3af', border: '#9ca3af' },
+  { value: 'yellow', label: 'Amarela', color: '#eab308', border: '#eab308' },
+  { value: 'orange', label: 'Laranja', color: '#f97316', border: '#f97316' },
+  { value: 'green',  label: 'Verde',   color: '#22c55e', border: '#22c55e' },
+  { value: 'blue',   label: 'Azul',    color: '#3b82f6', border: '#3b82f6' },
+  { value: 'purple', label: 'Roxa',    color: '#a855f7', border: '#a855f7' },
+  { value: 'brown',  label: 'Marrom',  color: '#92400e', border: '#b45309' },
+  { value: 'black',  label: 'Preta',   color: '#1e293b', border: '#475569' },
+]
+
+function formatPhone(value: string) {
+  const nums = value.replace(/\D/g, '').slice(0, 11)
+  if (nums.length <= 2) return nums
+  if (nums.length <= 7) return `(${nums.slice(0, 2)}) ${nums.slice(2)}`
+  if (nums.length <= 10) return `(${nums.slice(0, 2)}) ${nums.slice(2, 6)}-${nums.slice(6)}`
+  return `(${nums.slice(0, 2)}) ${nums.slice(2, 7)}-${nums.slice(7)}`
 }
 
-const handleSubmit = async () => {
-  errorMessage.value = ''
-  successMessage.value = ''
+function formatCpf(value: string) {
+  const nums = value.replace(/\D/g, '').slice(0, 11)
+  if (nums.length <= 3) return nums
+  if (nums.length <= 6) return `${nums.slice(0, 3)}.${nums.slice(3)}`
+  if (nums.length <= 9) return `${nums.slice(0, 3)}.${nums.slice(3, 6)}.${nums.slice(6)}`
+  return `${nums.slice(0, 3)}.${nums.slice(3, 6)}.${nums.slice(6, 9)}-${nums.slice(9)}`
+}
 
-  if (!formData.value.name.trim()) {
-    errorMessage.value = 'Por favor, preencha o nome.'
-    return
-  }
+function onPhoneInput(e: Event, field: 'phone' | 'emergency_contact_phone') {
+  form.value[field] = formatPhone((e.target as HTMLInputElement).value)
+}
 
-  if (!formData.value.cpf.trim()) {
-    errorMessage.value = 'Por favor, preencha o CPF.'
-    return
-  }
+function onCpfInput(e: Event) {
+  form.value.cpf = formatCpf((e.target as HTMLInputElement).value)
+}
 
-  if (!formData.value.phone.trim()) {
-    errorMessage.value = 'Por favor, preencha o telefone.'
-    return
-  }
+function onDateOfBirthChange() {
+  form.value.category = calculateCategory(form.value.date_of_birth)
+}
 
-  if (!formData.value.date_of_birth) {
-    errorMessage.value = 'Por favor, preencha a data de nascimento.'
-    return
-  }
-
-  if (!formData.value.emergency_contact_name.trim()) {
-    errorMessage.value = 'Por favor, preencha o nome do contato de emergência.'
-    return
-  }
-
-  if (!formData.value.emergency_contact_phone.trim()) {
-    errorMessage.value = 'Por favor, preencha o telefone do contato de emergência.'
-    return
-  }
-
-  isLoading.value = true
-
+async function handleSubmit() {
+  loading.value = true
+  error.value = ''
   try {
-    let academyId = route.query.academy_id as string
-    
-    if (!academyId) {
-      academyId = route.params.academy_id as string
+    await apiFetch('/register-student', {
+      method: 'POST',
+      body: JSON.stringify({
+        academy_id: academyId.value,
+        name: form.value.name,
+        phone: form.value.phone.replace(/\D/g, ''),
+        cpf: form.value.cpf.replace(/\D/g, ''),
+        date_of_birth: form.value.date_of_birth,
+        category: form.value.category,
+        address: form.value.address,
+        neighborhood: form.value.neighborhood,
+        enrollment_date: form.value.enrollment_date,
+        emergency_contact_name: form.value.emergency_contact_name,
+        emergency_contact_phone: form.value.emergency_contact_phone.replace(/\D/g, ''),
+        belt: form.value.belt,
+        last_graduation_date: form.value.last_graduation_date,
+      }),
+    })
+
+    // Se foi cadastro interno (professor), volta para alunos
+    if (isInternal.value) {
+      router.push({ name: 'students' })
+    } else {
+      // Caso contrário, mostra tela de sucesso
+      success.value = true
     }
-
-    if (!academyId) {
-      errorMessage.value = 'ID da academia não fornecido.'
-      return
-    }
-
-    const payload = {
-      academy_id: academyId,
-      name: formData.value.name.trim(),
-      phone: formData.value.phone.trim(),
-      cpf: formData.value.cpf.replace(/\D/g, ''),
-      date_of_birth: formData.value.date_of_birth,
-      emergency_contact_name: formData.value.emergency_contact_name.trim(),
-      emergency_contact_phone: formData.value.emergency_contact_phone.trim(),
-      belt: formData.value.belt
-    }
-
-    const response = await fetch(
-      'https://tcnqzaciroovlqdkgyes.supabase.co/functions/v1/register-student-public',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      }
-    )
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      errorMessage.value = data.message || 'Erro ao registrar aluno.'
-      return
-    }
-
-    successMessage.value = 'Aluno registrado com sucesso!'
-    showSuccessScreen.value = true
-    setTimeout(() => {
-      router.push({
-        name: 'student-finish',
-        query: {
-          name: formData.value.name,
-          academy: academyId
-        }
-      })
-    }, 3000)
-  } catch (error) {
-    console.error('Erro:', error)
-    errorMessage.value = 'Erro ao registrar aluno. Tente novamente.'
+  } catch (e: any) {
+    error.value = e.message || 'Erro ao cadastrar. Tente novamente.'
   } finally {
-    isLoading.value = false
+    loading.value = false
   }
 }
+
+const inputClass =
+  'w-full h-11 px-3.5 rounded-lg bg-input border border-border text-[15px] text-foreground placeholder:text-muted-foreground/40 outline-none focus:ring-1 focus:ring-ring focus:border-ring transition-colors'
+
+const labelClass = 'block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5'
 </script>
 
 <template>
-  <!-- Tela de Sucesso -->
-  <div v-if="showSuccessScreen" class="min-h-screen bg-white flex items-center justify-center px-4">
-    <div class="text-center max-w-md mx-auto">
-      <div class="mb-6">
-        <div class="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-100 mb-4">
-          <CheckCircle class="h-12 w-12 sm:h-14 sm:w-14 text-green-600" />
+  <div class="min-h-screen bg-background">
+    <!-- Sticky header -->
+    <header class="sticky top-0 z-10 bg-background border-b border-border px-4 py-3.5 flex items-center justify-between gap-2.5">
+      <div class="flex items-center gap-2.5">
+        <div v-if="isInternal" class="flex-shrink-0">
+          <button
+            @click="router.back()"
+            class="p-1.5 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-foreground"
+            title="Voltar"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" x2="5" y1="12" y2="12" />
+              <polyline points="12 19 5 12 12 5" />
+            </svg>
+          </button>
         </div>
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-          Cadastro Realizado!
-        </h1>
-        <p class="text-gray-600 text-sm sm:text-base">
-          Seu cadastro foi realizado com sucesso. Você será redirecionado em instantes...
+        <div class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+          <svg width="13" height="13" viewBox="0 0 20 20" fill="none">
+            <path d="M10 2L17 6.5V13.5L10 18L3 13.5V6.5L10 2Z" fill="white" fill-opacity="0.8" />
+            <path d="M10 7L13.5 9.25V12.75L10 15L6.5 12.75V9.25L10 7Z" fill="white" />
+          </svg>
+        </div>
+        <div>
+          <span class="text-[13px] font-semibold text-foreground leading-none block">Tatame Hub</span>
+          <span class="text-[11px] text-muted-foreground leading-none">Cadastro de aluno</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="px-4 py-6 max-w-lg mx-auto pb-12">
+      <!-- ── Success ── -->
+      <div v-if="success" class="mt-8 bg-card border border-green-500/20 rounded-2xl p-8 text-center">
+        <div class="w-14 h-14 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mx-auto mb-5">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-green-400">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <h2 class="text-[20px] font-semibold text-foreground mb-2">Cadastro realizado!</h2>
+        <p class="text-sm text-muted-foreground leading-relaxed">
+          Seus dados foram enviados com sucesso.<br>Aguarde a confirmação do seu professor.
         </p>
       </div>
-      
-      <div class="flex justify-center">
-        <div class="flex space-x-1">
-          <div class="w-2 h-2 bg-green-600 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
-          <div class="w-2 h-2 bg-green-600 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
-          <div class="w-2 h-2 bg-green-600 rounded-full animate-bounce" style="animation-delay: 0.4s;"></div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Formulário Original -->
-  <div v-else class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900">
-    <main class="w-full py-6 pb-28 sm:py-8 sm:pb-8">
-      <div class="max-w-2xl mx-auto px-4 sm:px-6">
-        <Card class="shadow-sm">
-          <CardHeader class="pb-3 sm:pb-4">
-            <div class="flex items-center gap-2 sm:gap-3">
-              <div class="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 flex-shrink-0">
-                <UserPlus class="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+      <!-- ── Form ── -->
+      <div v-else>
+        <div class="mb-6">
+          <h1 class="text-[20px] font-semibold text-foreground tracking-tight mb-1">Cadastro de aluno</h1>
+          <p class="text-sm text-muted-foreground">Preencha seus dados para se cadastrar na academia</p>
+        </div>
+
+        <form @submit.prevent="handleSubmit" class="space-y-7">
+          <!-- Dados pessoais -->
+          <section>
+            <p class="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-4">Dados pessoais</p>
+            <div class="space-y-4">
+              <div>
+                <label :class="labelClass">Nome completo</label>
+                <input v-model="form.name" type="text" placeholder="João Silva" required :class="inputClass" autocomplete="name" />
               </div>
-              <div class="min-w-0">
-                <CardTitle class="text-lg sm:text-xl">Cadastro de Aluno</CardTitle>
-                <CardDescription class="text-xs sm:text-sm">
-                  Preencha seus dados para se registrar
-                </CardDescription>
+
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label :class="labelClass">Telefone</label>
+                  <input
+                    :value="form.phone"
+                    @input="(e) => onPhoneInput(e, 'phone')"
+                    type="tel"
+                    placeholder="(21) 99999-9999"
+                    :class="inputClass"
+                    autocomplete="tel"
+                  />
+                </div>
+                <div>
+                  <label :class="labelClass">CPF</label>
+                  <input :value="form.cpf" @input="onCpfInput" type="text" placeholder="000.000.000-00" :class="inputClass" />
+                </div>
+              </div>
+
+              <div>
+                <label :class="labelClass">Data de nascimento</label>
+                <input v-model="form.date_of_birth" @change="onDateOfBirthChange" type="date" required :class="inputClass" />
+              </div>
+
+              <div>
+                <label :class="labelClass">Categoria</label>
+                <div :class="[inputClass, 'flex items-center']">
+                  {{ form.category || 'Selecione uma data de nascimento' }}
+                </div>
               </div>
             </div>
-          </CardHeader>
+          </section>
 
-          <CardContent class="pt-0">
-            <form @submit.prevent="handleSubmit" class="space-y-4">
-              <!-- Success Message -->
-              <div v-if="successMessage && !showSuccessScreen" class="flex items-center gap-2 p-2.5 text-xs sm:text-sm text-green-700 bg-green-50 border border-green-200 rounded-md">
-                <CheckCircle class="h-4 w-4 flex-shrink-0" />
-                <span>{{ successMessage }}</span>
+          <!-- Divisor -->
+          <div class="border-t border-border" />
+
+          <!-- Endereço -->
+          <section>
+            <p class="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-4">Endereço</p>
+            <div class="space-y-4">
+              <div>
+                <label :class="labelClass">Rua</label>
+                <input v-model="form.address" type="text" placeholder="Rua das Flores, 123" :class="inputClass" />
               </div>
 
-              <!-- Error Message -->
-              <div v-if="errorMessage" class="flex items-start gap-2 p-2.5 text-xs sm:text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-md">
-                <AlertCircle class="h-4 w-4 flex-shrink-0 mt-0.5" />
-                <span>{{ errorMessage }}</span>
+              <div>
+                <label :class="labelClass">Bairro</label>
+                <input v-model="form.neighborhood" type="text" placeholder="Centro" :class="inputClass" />
               </div>
+            </div>
+          </section>
 
-              <!-- Nome -->
-              <div class="space-y-1.5">
-                <Label for="name" class="text-xs sm:text-sm">Nome Completo <span class="text-destructive">*</span></Label>
-                <Input
-                  id="name"
-                  v-model="formData.name"
-                  type="text"
-                  placeholder="João Silva Santos"
-                  :disabled="isLoading"
-                  class="h-9 sm:h-10 text-sm focus:ring-1 focus:ring-primary/50"
-                />
+          <!-- Divisor -->
+          <div class="border-t border-border" />
+
+          <!-- Datas -->
+          <section>
+            <p class="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-4">Datas</p>
+            <div class="space-y-4">
+              <div>
+                <label :class="labelClass">Data de ingresso</label>
+                <input v-model="form.enrollment_date" type="date" :class="inputClass" />
               </div>
-
-              <!-- CPF -->
-              <div class="space-y-1.5">
-                <Label for="cpf" class="text-xs sm:text-sm">CPF <span class="text-destructive">*</span></Label>
-                <Input
-                  id="cpf"
-                  :model-value="formData.cpf"
-                  @input="handleCPFInput"
-                  type="text"
-                  placeholder="000.000.000-00"
-                  maxlength="14"
-                  :disabled="isLoading"
-                  class="h-9 sm:h-10 text-sm focus:ring-1 focus:ring-primary/50"
-                />
+              <div>
+                <label :class="labelClass">Data da última graduação</label>
+                <input v-model="form.last_graduation_date" type="date" :class="inputClass" />
               </div>
+            </div>
+          </section>
 
-              <!-- Data de Nascimento -->
-              <div class="space-y-1.5">
-                <Label for="date_of_birth" class="text-xs sm:text-sm">Data de Nascimento <span class="text-destructive">*</span></Label>
-                <Input
-                  id="date_of_birth"
-                  v-model="formData.date_of_birth"
-                  type="date"
-                  :disabled="isLoading"
-                  class="h-9 sm:h-10 text-sm focus:ring-1 focus:ring-primary/50"
-                />
+          <!-- Divisor -->
+          <div class="border-t border-border" />
+
+          <!-- Contato de emergência -->
+          <section>
+            <p class="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-4">Contato de emergência</p>
+            <div class="space-y-4">
+              <div>
+                <label :class="labelClass">Nome</label>
+                <input v-model="form.emergency_contact_name" type="text" placeholder="Maria Silva" :class="inputClass" />
               </div>
-
-              <!-- Telefone -->
-              <div class="space-y-1.5">
-                <Label for="phone" class="text-xs sm:text-sm">Telefone <span class="text-destructive">*</span></Label>
-                <Input
-                  id="phone"
-                  v-model="formData.phone"
+              <div>
+                <label :class="labelClass">Telefone</label>
+                <input
+                  :value="form.emergency_contact_phone"
+                  @input="(e) => onPhoneInput(e, 'emergency_contact_phone')"
                   type="tel"
-                  placeholder="(00) 00000-0000"
-                  :disabled="isLoading"
-                  class="h-9 sm:h-10 text-sm focus:ring-1 focus:ring-primary/50"
+                  placeholder="(21) 98888-8888"
+                  :class="inputClass"
                 />
               </div>
+            </div>
+          </section>
 
-              <!-- Faixa -->
-              <div class="space-y-1.5">
-                <Label for="belt" class="text-xs sm:text-sm">Faixa <span class="text-destructive">*</span></Label>
-                <select
-                  id="belt"
-                  v-model="formData.belt"
-                  class="flex h-9 sm:h-10 w-full rounded-md border border-input bg-background pl-3 pr-8 py-2 text-xs sm:text-sm ring-offset-background appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2220%22%20height%3D%2220%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22currentColor%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpath%20d%3D%22m6%209%206%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:1rem] bg-[right_0.5rem_center] bg-no-repeat file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/50 disabled:cursor-not-allowed disabled:opacity-50"
-                  :disabled="isLoading"
-                >
-                  <option value="branca">Branca</option>
-                  <option value="cinza">Cinza</option>
-                  <option value="amarela">Amarela</option>
-                  <option value="laranja">Laranja</option>
-                  <option value="verde">Verde</option>
-                  <option value="azul">Azul</option>
-                  <option value="roxa">Roxa</option>
-                  <option value="marrom">Marrom</option>
-                  <option value="preta">Preta</option>
-                </select>
-              </div>
+          <!-- Divisor -->
+          <div class="border-t border-border" />
 
-              <!-- Contato de Emergência - Nome -->
-              <div class="space-y-1.5">
-                <Label for="emergency_contact_name" class="text-xs sm:text-sm">Contato de Emergência <span class="text-destructive">*</span></Label>
-                <Input
-                  id="emergency_contact_name"
-                  v-model="formData.emergency_contact_name"
-                  type="text"
-                  placeholder="Maria Silva Santos"
-                  :disabled="isLoading"
-                  class="h-9 sm:h-10 text-sm focus:ring-1 focus:ring-primary/50"
+          <!-- Faixa -->
+          <section>
+            <p class="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-4">Faixa</p>
+            <!-- 2-col grid on mobile for easier tapping -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <button
+                v-for="belt in belts"
+                :key="belt.value"
+                type="button"
+                @click="form.belt = belt.value"
+                class="flex items-center gap-2.5 h-11 px-3.5 rounded-xl border text-[13px] font-medium transition-all"
+                :class="
+                  form.belt === belt.value
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-border text-muted-foreground bg-secondary/50 hover:border-border hover:text-foreground'
+                "
+              >
+                <span
+                  class="w-3.5 h-3.5 rounded-full flex-shrink-0 border-2"
+                  :style="{ backgroundColor: belt.color, borderColor: belt.border }"
                 />
-              </div>
+                {{ belt.label }}
+              </button>
+            </div>
+          </section>
 
-              <!-- Contato de Emergência - Telefone -->
-              <div class="space-y-1.5">
-                <Label for="emergency_contact_phone" class="text-xs sm:text-sm">Telefone do Contato <span class="text-destructive">*</span></Label>
-                <Input
-                  id="emergency_contact_phone"
-                  v-model="formData.emergency_contact_phone"
-                  type="tel"
-                  placeholder="(00) 00000-0000"
-                  :disabled="isLoading"
-                  class="h-9 sm:h-10 text-sm focus:ring-1 focus:ring-primary/50"
-                />
-              </div>
+          <!-- Error -->
+          <div v-if="error" class="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/25">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-destructive shrink-0 mt-px">
+              <circle cx="12" cy="12" r="10" /><line x1="12" x2="12" y1="8" y2="12" /><line x1="12" x2="12.01" y1="16" y2="16" />
+            </svg>
+            <p class="text-sm text-destructive">{{ error }}</p>
+          </div>
 
-              <!-- Buttons -->
-              <div class="flex gap-2 pt-2 sm:pt-3">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  @click="$router.back()" 
-                  class="flex-1 h-9 sm:h-10 text-xs sm:text-sm" 
-                  :disabled="isLoading"
-                >
-                  Voltar
-                </Button>
-                <Button 
-                  @click="handleSubmit" 
-                  class="flex-1 h-9 sm:h-10 text-xs sm:text-sm" 
-                  :disabled="isLoading"
-                >
-                  <span v-if="!isLoading" class="flex items-center justify-center gap-1.5">
-                    <UserPlus class="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    <span class="hidden xs:inline">Registrar</span>
-                    <span class="inline xs:hidden">OK</span>
-                  </span>
-                  <span v-else class="flex items-center justify-center gap-1.5">
-                    <svg class="animate-spin h-3.5 w-3.5 sm:h-4 sm:w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span class="hidden xs:inline">Registrando...</span>
-                    <span class="inline xs:hidden">...</span>
-                  </span>
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+          <button
+            type="submit"
+            :disabled="loading"
+            class="w-full h-12 bg-primary text-white rounded-xl text-[15px] font-semibold hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span v-if="loading" class="flex items-center justify-center gap-2">
+              <svg class="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Enviando...
+            </span>
+            <span v-else>Concluir cadastro</span>
+          </button>
+        </form>
       </div>
-    </main>
+    </div>
   </div>
 </template>

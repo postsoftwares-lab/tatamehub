@@ -21,7 +21,7 @@ interface Student {
   emergency_contact_name: string
   emergency_contact_phone: string
   belt: string
-  last_graduation_date: string
+  graduation_date: string
   status: boolean
   created_at: string
 }
@@ -49,7 +49,7 @@ const copyFields = ref({
   neighborhood: false,
   enrollment_date: false,
   belt: false,
-  last_graduation_date: false,
+  graduation_date: false,
   confirmado: true,
 })
 const copyToastShow = ref(false)
@@ -144,7 +144,7 @@ function getFieldLabel(field: keyof typeof copyFields.value): string {
     neighborhood: 'Bairro',
     enrollment_date: 'Data de ingresso',
     belt: 'Faixa',
-    last_graduation_date: 'Data da última graduação',
+    graduation_date: 'Data de graduação',
     confirmado: 'Confirmado',
   }
   return labels[field] || field
@@ -166,7 +166,7 @@ function getFieldDisplayValue(field: string, student: Student, value: any): stri
   if (field === 'confirmado') {
     return value === true ? 'Confirmado: ✅' : 'Confirmado: ❌'
   }
-  if (field === 'date_of_birth' || field === 'enrollment_date' || field === 'last_graduation_date') {
+  if (field === 'date_of_birth' || field === 'enrollment_date' || field === 'graduation_date') {
     return value ? formatDate(value) : '-'
   }
   if (field === 'phone') {
@@ -410,8 +410,8 @@ onMounted(() => {
                   <span class="text-[12px] text-foreground font-medium">{{ student.enrollment_date ? formatDate(student.enrollment_date) : '-' }}</span>
                 </div>
                 <div class="flex justify-between gap-4">
-                  <span class="text-[12px] text-muted-foreground">Última graduação</span>
-                  <span class="text-[12px] text-foreground font-medium">{{ student.last_graduation_date ? formatDate(student.last_graduation_date) : '-' }}</span>
+                  <span class="text-[12px] text-muted-foreground">Graduação</span>
+                  <span class="text-[12px] text-foreground font-medium">{{ student.graduation_date ? formatDate(student.graduation_date) : '-' }}</span>
                 </div>
               </div>
             </div>

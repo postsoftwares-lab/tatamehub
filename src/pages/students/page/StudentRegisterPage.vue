@@ -77,7 +77,7 @@ function formatPhone(value: string) {
   if (nums.length <= 2) return nums
   if (nums.length <= 7) return `(${nums.slice(0, 2)}) ${nums.slice(2)}`
   if (nums.length <= 10) return `(${nums.slice(0, 2)}) ${nums.slice(2, 6)}-${nums.slice(6)}`
-  return `(${nums.slice(0, 2)}) ${nums.slice(2, 7)}-${nums.slice(7)}`
+  return `(${nums.slice(0, 2)}) ${nums.slice(2, 7)}-${nums.slice(7, 11)}`
 }
 
 function formatCpf(value: string) {
@@ -85,7 +85,7 @@ function formatCpf(value: string) {
   if (nums.length <= 3) return nums
   if (nums.length <= 6) return `${nums.slice(0, 3)}.${nums.slice(3)}`
   if (nums.length <= 9) return `${nums.slice(0, 3)}.${nums.slice(3, 6)}.${nums.slice(6)}`
-  return `${nums.slice(0, 3)}.${nums.slice(3, 6)}.${nums.slice(6, 9)}-${nums.slice(9)}`
+  return `${nums.slice(0, 3)}.${nums.slice(3, 6)}.${nums.slice(6, 9)}-${nums.slice(9, 11)}`
 }
 
 function onPhoneInput(e: Event, field: 'phone' | 'emergency_contact_phone') {
@@ -103,21 +103,62 @@ function onDateOfBirthChange() {
 async function handleSubmit() {
   loading.value = true
   error.value = ''
+
+  const phone = form.value.phone.replace(/\D/g, '')
+  const cpf = form.value.cpf.replace(/\D/g, '')
+  const emergencyPhone = form.value.emergency_contact_phone.replace(/\D/g, '')
+
+  if (!form.value.name || form.value.name.length > 150) {
+    error.value = 'Nome inválido (máx 150 caracteres)'
+    loading.value = false
+    return
+  }
+  if (phone.length !== 11) {
+    error.value = 'Telefone deve ter 11 dígitos'
+    loading.value = false
+    return
+  }
+  if (form.value.cpf && cpf.length !== 11) {
+    error.value = 'CPF deve ter 11 dígitos'
+    loading.value = false
+    return
+  }
+  if (form.value.address && form.value.address.length > 200) {
+    error.value = 'Endereço muito longo (máx 200 caracteres)'
+    loading.value = false
+    return
+  }
+  if (form.value.neighborhood && form.value.neighborhood.length > 100) {
+    error.value = 'Bairro muito longo (máx 100 caracteres)'
+    loading.value = false
+    return
+  }
+  if (form.value.emergency_contact_name && form.value.emergency_contact_name.length > 150) {
+    error.value = 'Nome do contato muito longo (máx 150 caracteres)'
+    loading.value = false
+    return
+  }
+  if (form.value.emergency_contact_phone && emergencyPhone.length !== 11) {
+    error.value = 'Telefone do contato deve ter 11 dígitos'
+    loading.value = false
+    return
+  }
+
   try {
     await apiFetch('/register-student', {
       method: 'POST',
       body: JSON.stringify({
         academy_id: academyId.value,
         name: form.value.name,
-        phone: form.value.phone.replace(/\D/g, ''),
-        cpf: form.value.cpf.replace(/\D/g, ''),
+        phone,
+        cpf,
         date_of_birth: form.value.date_of_birth,
         category: form.value.category,
         address: form.value.address,
         neighborhood: form.value.neighborhood,
         enrollment_date: form.value.enrollment_date,
         emergency_contact_name: form.value.emergency_contact_name,
-        emergency_contact_phone: form.value.emergency_contact_phone.replace(/\D/g, ''),
+        emergency_contact_phone: emergencyPhone,
         belt: form.value.belt,
         last_graduation_date: form.value.last_graduation_date,
       }),
@@ -201,7 +242,7 @@ const labelClass = 'block text-xs font-semibold text-muted-foreground uppercase 
             <div class="space-y-4">
               <div>
                 <label :class="labelClass">Nome completo</label>
-                <input v-model="form.name" type="text" placeholder="João Silva" required :class="inputClass" autocomplete="name" />
+                <input v-model="form.name" type="text" placeholder="João Silva" required maxlength="150" :class="inputClass" autocomplete="name" />
               </div>
 
               <div class="grid grid-cols-2 gap-3">
@@ -245,12 +286,12 @@ const labelClass = 'block text-xs font-semibold text-muted-foreground uppercase 
             <div class="space-y-4">
               <div>
                 <label :class="labelClass">Rua</label>
-                <input v-model="form.address" type="text" placeholder="Rua das Flores, 123" :class="inputClass" />
+                <input v-model="form.address" type="text" placeholder="Rua das Flores, 123" maxlength="200" :class="inputClass" />
               </div>
 
               <div>
                 <label :class="labelClass">Bairro</label>
-                <input v-model="form.neighborhood" type="text" placeholder="Centro" :class="inputClass" />
+                <input v-model="form.neighborhood" type="text" placeholder="Centro" maxlength="100" :class="inputClass" />
               </div>
             </div>
           </section>
@@ -282,7 +323,7 @@ const labelClass = 'block text-xs font-semibold text-muted-foreground uppercase 
             <div class="space-y-4">
               <div>
                 <label :class="labelClass">Nome</label>
-                <input v-model="form.emergency_contact_name" type="text" placeholder="Maria Silva" :class="inputClass" />
+                <input v-model="form.emergency_contact_name" type="text" placeholder="Maria Silva" maxlength="150" :class="inputClass" />
               </div>
               <div>
                 <label :class="labelClass">Telefone</label>

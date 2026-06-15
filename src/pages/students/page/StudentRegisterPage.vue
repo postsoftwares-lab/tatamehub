@@ -10,7 +10,7 @@ const isInternal = computed(() => route.query.internal === 'true')
 
 function getTodayDate(): string {
   const today = new Date()
-  return today.toISOString().split('T')[0]
+  return today.toISOString().split('T')[0] ?? ''
 }
 
 const form = ref({

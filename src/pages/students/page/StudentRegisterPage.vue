@@ -271,7 +271,7 @@ const labelClass = 'block text-xs font-semibold text-muted-foreground uppercase 
                     @input="(e) => onPhoneInput(e, 'phone')"
                     type="tel"
                     placeholder="(21) 99999-9999"
-                    maxlength="14"
+                    maxlength="15"
                     :class="inputClass"
                     autocomplete="tel"
                   />
@@ -350,8 +350,8 @@ const labelClass = 'block text-xs font-semibold text-muted-foreground uppercase 
                   :value="form.emergency_contact_phone"
                   @input="(e) => onPhoneInput(e, 'emergency_contact_phone')"
                   type="tel"
-                  placeholder="(21) 98888-8888"
-                  maxlength="14"
+                  placeholder="(21) 99999-9999"
+                  maxlength="15"
                   :class="inputClass"
                 />
               </div>

@@ -25,6 +25,7 @@ const form = ref({
   emergency_contact_name: '',
   emergency_contact_phone: '',
   belt: 'white',
+  graduation_date: '',
 })
 
 const loading = ref(false)
@@ -162,22 +163,29 @@ async function handleSubmit() {
   }
 
   try {
+    const payload: any = {
+      academy_id: academyId.value,
+      name: form.value.name,
+      phone,
+      cpf,
+      date_of_birth: form.value.date_of_birth,
+      category: form.value.category,
+      address: form.value.address,
+      neighborhood: form.value.neighborhood,
+      enrollment_date: form.value.enrollment_date,
+      emergency_contact_name: form.value.emergency_contact_name,
+      emergency_contact_phone: emergencyPhone,
+      belt: form.value.belt,
+    }
+
+    // Omit graduation_date if empty
+    if (form.value.graduation_date) {
+      payload.graduation_date = form.value.graduation_date
+    }
+
     await apiFetch('/register-student', {
       method: 'POST',
-      body: JSON.stringify({
-        academy_id: academyId.value,
-        name: form.value.name,
-        phone,
-        cpf,
-        date_of_birth: form.value.date_of_birth,
-        category: form.value.category,
-        address: form.value.address,
-        neighborhood: form.value.neighborhood,
-        enrollment_date: form.value.enrollment_date,
-        emergency_contact_name: form.value.emergency_contact_name,
-        emergency_contact_phone: emergencyPhone,
-        belt: form.value.belt,
-      }),
+      body: JSON.stringify(payload),
     })
 
     // Se foi cadastro interno (professor), volta para alunos
@@ -323,6 +331,10 @@ const labelClass = 'block text-xs font-semibold text-muted-foreground uppercase 
               <div>
                 <label :class="labelClass">Data de ingresso</label>
                 <input v-model="form.enrollment_date" type="date" :class="inputClass" />
+              </div>
+              <div>
+                <label :class="labelClass">Data de graduação</label>
+                <input v-model="form.graduation_date" type="date" :class="inputClass" />
               </div>
             </div>
           </section>

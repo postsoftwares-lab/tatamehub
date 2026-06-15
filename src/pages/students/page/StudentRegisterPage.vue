@@ -25,7 +25,6 @@ const form = ref({
   emergency_contact_name: '',
   emergency_contact_phone: '',
   belt: 'white',
-  last_graduation_date: '',
 })
 
 const loading = ref(false)
@@ -178,7 +177,6 @@ async function handleSubmit() {
         emergency_contact_name: form.value.emergency_contact_name,
         emergency_contact_phone: emergencyPhone,
         belt: form.value.belt,
-        last_graduation_date: form.value.last_graduation_date,
       }),
     })
 
@@ -325,10 +323,6 @@ const labelClass = 'block text-xs font-semibold text-muted-foreground uppercase 
               <div>
                 <label :class="labelClass">Data de ingresso</label>
                 <input v-model="form.enrollment_date" type="date" :class="inputClass" />
-              </div>
-              <div>
-                <label :class="labelClass">Data da última graduação</label>
-                <input v-model="form.last_graduation_date" type="date" :class="inputClass" />
               </div>
             </div>
           </section>

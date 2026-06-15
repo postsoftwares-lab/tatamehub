@@ -89,11 +89,29 @@ function formatCpf(value: string) {
 }
 
 function onPhoneInput(e: Event, field: 'phone' | 'emergency_contact_phone') {
-  form.value[field] = formatPhone((e.target as HTMLInputElement).value)
+  const input = (e.target as HTMLInputElement).value
+  const nums = input.replace(/\D/g, '')
+
+  // Rejeita se tiver mais de 11 dígitos
+  if (nums.length > 11) {
+    form.value[field] = formatPhone(nums.slice(0, 11))
+    return
+  }
+
+  form.value[field] = formatPhone(input)
 }
 
 function onCpfInput(e: Event) {
-  form.value.cpf = formatCpf((e.target as HTMLInputElement).value)
+  const input = (e.target as HTMLInputElement).value
+  const nums = input.replace(/\D/g, '')
+
+  // Rejeita se tiver mais de 11 dígitos
+  if (nums.length > 11) {
+    form.value.cpf = formatCpf(nums.slice(0, 11))
+    return
+  }
+
+  form.value.cpf = formatCpf(input)
 }
 
 function onDateOfBirthChange() {
@@ -253,13 +271,14 @@ const labelClass = 'block text-xs font-semibold text-muted-foreground uppercase 
                     @input="(e) => onPhoneInput(e, 'phone')"
                     type="tel"
                     placeholder="(21) 99999-9999"
+                    maxlength="14"
                     :class="inputClass"
                     autocomplete="tel"
                   />
                 </div>
                 <div>
                   <label :class="labelClass">CPF</label>
-                  <input :value="form.cpf" @input="onCpfInput" type="text" placeholder="000.000.000-00" :class="inputClass" />
+                  <input :value="form.cpf" @input="onCpfInput" type="text" placeholder="000.000.000-00" maxlength="14" :class="inputClass" />
                 </div>
               </div>
 
@@ -332,6 +351,7 @@ const labelClass = 'block text-xs font-semibold text-muted-foreground uppercase 
                   @input="(e) => onPhoneInput(e, 'emergency_contact_phone')"
                   type="tel"
                   placeholder="(21) 98888-8888"
+                  maxlength="14"
                   :class="inputClass"
                 />
               </div>
